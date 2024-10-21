@@ -3,3 +3,5 @@ tempFile/*
 outputImage/*
 venv/*
 .vscode/*
+
+*.vcd
