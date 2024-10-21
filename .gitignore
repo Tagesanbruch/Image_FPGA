@@ -1,0 +1,7 @@
+build/*
+tempFile/*
+outputImage/*
+venv/*
+.vscode/*
+
+*.vcd
