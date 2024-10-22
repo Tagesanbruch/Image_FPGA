@@ -8,13 +8,13 @@
 
 ### 安装需要的软件
 ```bash
-apt install verilator gtkwave
+apt install verilator gtkwave python3-pip python3-venv libreadline-dev
 ```
 
 ### python环境搭建
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 source ./venv/bin/activate
 ```
 
@@ -52,6 +52,9 @@ module TOP
 
 在inputImage中准备好待处理的图像（*jpg格式*），在工程目录下执行`make preprocess`，工程会将图像转化为csv像素文件（RGB888格式）及图像对应参数txt文件，存放在`tempFile/originalImage_csv`目录下
 
-执行`make run TEST_TARGET=<待仿真文件名>`（文件名不需要带.jpg后缀，此项无输入默认为lena20k，即执行`make run`等效为`make run TEST_TARGET=lena20k`），verilator将对工程进行仿真，仿真逻辑实现参考`csrc/sim_main.cpp`，处理结构存放在`tempFile/`仿真波形存放在`wave.vcd`中（注：参考工程仿真621419周期的vcd文件占用52.26MB，应合理设置trace参数，可通过`CONFIG_TRACE_MAX`配置最大记录周期数），通过`make gtkwave`可查看仿真波形
+执行`make run`进行仿真。可选参数有：`TEST_TARGET`：传入待仿真文件名，默认为lena20k；`TEST`：测试项目（对应vsrc文件夹下的项目文件夹名），默认为`example`即RGB转YCbCr例程
+`make run TEST_TARGET=<待仿真文件名> TEST=<待仿真verilog文件夹名>`（文件名不需要带.jpg后缀，此项无输入默认为lena20k，即执行`make run`等效为`make run TEST_TARGET=lena20k`）
+例：`make run TEST_TARGET=Baboon40 TEST=sobel_detector`
+仿真逻辑实现参考`csrc/sim_main.cpp`，处理结构存放在`tempFile/`仿真波形存放在`wave.vcd`中（注：参考工程仿真621419周期的vcd文件占用52.26MB，应合理设置trace参数，可通过`CONFIG_TRACE_MAX`配置最大记录周期数），通过`make gtkwave`可查看仿真波形
 
 执行`make verify`，工程会将处理好的csv文件转为*png图像*于`outputImage`目录下
