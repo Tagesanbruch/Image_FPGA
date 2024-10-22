@@ -18,11 +18,19 @@ export VERILATOR_ROOT
 VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
 VERILATOR_CFLAGS += -MMD --build -cc --trace \
-				-O3 --x-assign fast --x-initial fast --noassert
+				-O3 --x-assign fast --x-initial fast --noassert -Wno-WIDTHEXPAND
 TOPNAME = TOP
 WORK_DIR  = $(shell pwd)
 INC_PATH := $(WORK_DIR)/inc $(INC_PATH)
 TEST_BIN = $(FILE)
+TEST ?= example
+
+VSRC_PATH ?= $(abspath ./vsrc/$(TEST))
+
+ifeq ($(wildcard $(VSRC_PATH)),)
+	$(error Directory $(VSRC_PATH) does not exist)
+endif
+
 
 ifeq ($(strip $(ELF)),)
 	ELFFLAGS ?=
@@ -31,10 +39,11 @@ else
 endif
 
 
-BUILD_DIR = ./build
+BUILD_DIR = ./build/$(TEST)
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 default: $(BIN)
+
 	
 $(shell mkdir -p $(BUILD_DIR))
 # constraint file
@@ -43,7 +52,7 @@ $(shell mkdir -p $(BUILD_DIR))
 # 	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
 # project source
-VSRCS = $(shell find $(abspath ./vsrc) -name "*.v" -or -name "*.sv")
+VSRCS = $(shell find $(VSRC_PATH) -name "*.v" -or -name "*.sv")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 CXXSRCS = $(shell find $(abspath ./csrc) -name "*.cc" -or -name "*.cpp")
 # CSRCS += $(SRC_AUTO_BIND)
@@ -92,7 +101,7 @@ preprocess:
 	@mkdir -p $(CSV_PATH)
 	python3 utils/image_to_csv.py -i $(IMAGE_PATH) -o $(CSV_PATH)
 
-run: preprocess $(BIN)
+run: $(BIN)
 	@mkdir -p $(OUTPUT_PATH)
 	$(BIN) $(CSVFLAGS) $(PARAMFLAGS) $(OUTPUTFLAGS) $(LOGFLAGS) $(ELFFLAGS) $(TEST_BIN) $(TARGETFLAGS)
 

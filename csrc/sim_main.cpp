@@ -113,7 +113,7 @@ void step_no_inst() {
 #endif
 }
 
-void stepn(int n) {
+void step(int n) {
   while (n--) {
     step();
   }
@@ -151,12 +151,12 @@ void load_image_data(const char* csv_file_path) {
       hcnt = 0;
       vcnt++;
       top->per_frame_href = 0;
-      stepn(5);
+      step(5);
       printf("End of line[%d]\n", vcnt);
       if (vcnt == image_height) {
         top->per_frame_vsync = 0;
         printf("End of image\n");
-        stepn(1000);
+        step(1000);
         break;
       }
     }
