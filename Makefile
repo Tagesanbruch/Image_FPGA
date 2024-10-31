@@ -17,8 +17,8 @@ else
 export VERILATOR_ROOT
 VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
-VERILATOR_CFLAGS += -MMD --build -cc --trace \
-				-O3 --x-assign fast --x-initial fast --noassert -Wno-WIDTHEXPAND
+VERILATOR_CFLAGS += -MMD --build -cc --trace-fst \
+				-O3 --x-assign fast --x-initial fast --noassert -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC
 TOPNAME = TOP
 WORK_DIR  = $(shell pwd)
 INC_PATH := $(WORK_DIR)/inc $(INC_PATH)
@@ -110,11 +110,11 @@ verify:
 	python3 utils/csv_to_image.py -i $(OUTPUT_PATH) -o $(OUTPUTIMAGE_PATH)
 
 gtkwave:
-	gtkwave ./wave.vcd ./gtkwave.gtkw
+	gtkwave ./wave.fst ./gtkwave.gtkw
 
 ######################################################################
 
 maintainer-copy::
 clean mostlyclean distclean maintainer-clean::
-	-rm -rf $(BUILD_DIR) *.log *.dmp *.vcd *.vpd core
+	-rm -rf $(BUILD_DIR) *.log *.dmp *.fst *.vpd core
 .PHONY: default all clean run perf_test

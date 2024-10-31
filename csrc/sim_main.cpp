@@ -16,10 +16,10 @@ int data_count = 0;
 // #endif
 #ifdef TRACE
 #ifndef CONFIG_TRACE_MAX
-#define CONFIG_TRACE_MAX 1000000
+#define CONFIG_TRACE_MAX 20000000
 #endif
-#include "verilated_vcd_c.h"
-VerilatedVcdC* tfp = NULL;
+#include "verilated_fst_c.h"
+VerilatedFstC* tfp = NULL;
 #endif
 VerilatedContext* contextp = NULL;
 VTOP* top = NULL;
@@ -39,8 +39,8 @@ bool prev_post_frame_clken = false;
 
 void monitor_output() {
   // monitoring output
-  // posedge clken
-  if (!prev_post_frame_clken && top->post_frame_clken) {
+  // posedge clk
+  if (top->clk) {
     if (top->post_frame_href && top->post_frame_vsync) {
       csv_file << static_cast<int>(top->post_img_Y) << ","
                << static_cast<int>(top->post_img_Cb) << ","
@@ -74,7 +74,7 @@ void monitor_output() {
 }
 
 void step() {
-  top->clk = 0;
+  top->clk = 1;
   top->eval();
   monitor_output();
 #ifdef TRACE
@@ -83,7 +83,7 @@ void step() {
     contextp->timeInc(1);
   }
 #endif
-  top->clk = 1;
+  top->clk = 0;
   top->eval();
   monitor_output();
 #ifdef TRACE
@@ -103,7 +103,7 @@ void step_no_inst() {
     contextp->timeInc(1);
   }
 #endif
-  top->clk = 1;
+  top->clk = 0;
   top->eval();
 #ifdef TRACE
   if (trace_time++ < CONFIG_TRACE_MAX) {
@@ -122,12 +122,12 @@ void step(int n) {
 void reset(int n) {
   top->rst_n = 0;
   while (n--) {
-    step_no_inst();
+    step();
   }
   top->rst_n = 1;
 }
 
-void load_image_data(const char* csv_file_path) {
+void sim_image_data(const char* csv_file_path) {
   FILE* file = fopen(csv_file_path, "r");
   if (!file) {
     perror("Failed to open CSV file");
@@ -142,9 +142,9 @@ void load_image_data(const char* csv_file_path) {
     top->per_img_green = g;
     top->per_img_blue = b;
     top->per_frame_href = 1;
-    top->per_frame_clken = 1;
-    step();
-    top->per_frame_clken = 0;
+    // top->per_frame_clken = 1;
+    // step();
+    // top->per_frame_clken = 0;
     step();
     hcnt++;
     if (hcnt == image_width) {
@@ -156,7 +156,7 @@ void load_image_data(const char* csv_file_path) {
       if (vcnt == image_height) {
         top->per_frame_vsync = 0;
         printf("End of image\n");
-        step(1000);
+        step(100000);
         break;
       }
     }
@@ -237,10 +237,10 @@ int main(int argc, char* argv[]) {
   top = new VTOP;
   parse_args(argc, argv);
 #ifdef TRACE
-  tfp = new VerilatedVcdC;
+  tfp = new VerilatedFstC;
   contextp->traceEverOn(true);
   top->trace(tfp, 0);
-  tfp->open("wave.vcd");
+  tfp->open("wave.fst");
 #endif
   reset(10);
   if (image_file == NULL) {
@@ -272,7 +272,7 @@ int main(int argc, char* argv[]) {
   // Load image data from CSV file
 
   load_param_data(param_file);
-  load_image_data(image_file);
+  sim_image_data(image_file);
 
   // Run the simulation for a specified number of cycles
   for (int i = 0; i < 100; ++i) {
