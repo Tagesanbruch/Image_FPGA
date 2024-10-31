@@ -1,10 +1,9 @@
 import csv
 import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image
 import os
 import argparse
 
-# Parse command-line arguments
 parser = argparse.ArgumentParser(description='Process images and save RGB values to CSV and dimensions to TXT.')
 parser.add_argument('-i', '--input_dir', required=True, help='Input directory containing .csv and .txt files')
 parser.add_argument('-o', '--output_dir', default='../image/outputImage', help='Output directory for grayscale images')
@@ -25,14 +24,13 @@ def read_y_data(csv_file):
     with open(csv_file, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            y_data.append(int(row[0]))  # 读取Y列数据
+            y_data.append(int(row[0]))
     return y_data
 
 def save_grayscale_image(y_data, width, height, output_file):
-    y_array = np.array(y_data).reshape((height, width))
-    plt.imshow(y_array, cmap='gray')
-    plt.axis('off')
-    plt.savefig(output_file, bbox_inches='tight', pad_inches=0)
+    y_array = np.array(y_data, dtype=np.uint8).reshape((height, width))
+    image = Image.fromarray(y_array, mode='L')
+    image.save(output_file)
 
 def process_files(input_directory, output_directory):
     for filename in os.listdir(input_directory):
@@ -44,8 +42,11 @@ def process_files(input_directory, output_directory):
             if os.path.exists(csv_file):
                 width, height = read_params(param_file)
                 y_data = read_y_data(csv_file)
-                save_grayscale_image(y_data, width, height, output_file)
-                print(f"Processed {csv_file} and saved grayscale image to {output_file}")
+                if len(y_data) == width * height:
+                    save_grayscale_image(y_data, width, height, output_file)
+                    print(f"Processed {csv_file} and saved grayscale image to {output_file}")
+                else:
+                    print(f"Data size mismatch for {csv_file}: expected {width * height}, got {len(y_data)}")
             else:
                 print(f"CSV file {csv_file} not found for {param_file}")
 
