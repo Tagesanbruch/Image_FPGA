@@ -41,6 +41,9 @@ module TOP
 	output 				post_img_bit
 );
 
+parameter IMG_HDISP = 12'd1920;
+parameter IMG_VDISP = 12'd1080;
+
 wire				mid1_frame_vsync;
 wire				mid1_frame_href;
 wire				mid1_frame_clken;
@@ -76,8 +79,8 @@ Image_RGB888_YCbCr444	u_VIP_RGB888_YCbCr444
 
 sobel_sharpen_proc
 #(
-    .IMG_HDISP(11'd640),                //  640*480
-    .IMG_VDISP(11'd480)
+    .IMG_HDISP(IMG_HDISP),                //  640*480
+    .IMG_VDISP(IMG_VDISP)
 ) u_sobel_sharpen_proc
 (
     .clk(clk),

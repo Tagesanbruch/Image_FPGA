@@ -41,6 +41,13 @@ module TOP
 	output 				post_img_bit
 );
 
+parameter IMG_HDISP = 12'd1920;
+parameter IMG_VDISP = 12'd1080;
+parameter IMG_HBLANLK = 11'd5;
+parameter IMG_VBLANK = 11'd0;
+parameter DELAY_NUM = IMG_HBLANLK  ;
+
+
 wire				mid1_frame_vsync;
 wire				mid1_frame_href;
 wire				mid1_frame_clken;
@@ -76,8 +83,9 @@ Image_RGB888_YCbCr444	u_VIP_RGB888_YCbCr444
 
 sobel_detector
 #(
-    .IMG_HDISP(11'd640),                //  640*480
-    .IMG_VDISP(11'd480)
+    .IMG_HDISP(IMG_HDISP),               
+    .IMG_VDISP(IMG_VDISP),
+	.DELAY_NUM(DELAY_NUM)
 ) u_sobel_detector
 (
     .clk(clk),

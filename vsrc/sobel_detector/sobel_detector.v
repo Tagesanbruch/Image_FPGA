@@ -16,8 +16,9 @@
 // *********************************************************************
 module sobel_detector
 #(
-    parameter   [10:0]  IMG_HDISP = 11'd640,                //  640*480
-    parameter   [10:0]  IMG_VDISP = 11'd480
+    parameter   [11:0]  IMG_HDISP = 12'd640,                
+    parameter   [11:0]  IMG_VDISP = 12'd480,
+    parameter   [11:0]  DELAY_NUM = 12'd5
 )
 (
     input  wire                 clk             ,
@@ -58,7 +59,8 @@ wire            [7:0]           matrix_p33;
 Matrix_Generate_3X3_8Bit
 #(
     .IMG_HDISP  (IMG_HDISP  ),
-    .IMG_VDISP  (IMG_VDISP  )
+    .IMG_VDISP  (IMG_VDISP  ),
+    .DELAY_NUM  (DELAY_NUM  )
 )
 u_Matrix_Generate_3X3_8Bit
 (
@@ -88,6 +90,17 @@ u_Matrix_Generate_3X3_8Bit
     .matrix_p32             (matrix_p32             ),
     .matrix_p33             (matrix_p33             )
 );
+
+
+//other sig sync
+wire matrix_img_clken;
+reg [IMG_HDISP+6:0] matrix_img_clken_r;
+
+always @(posedge clk,negedge rst_n) begin
+	if(!rst_n) matrix_img_clken_r <= 2'b0;
+	else matrix_img_clken_r <={matrix_img_clken_r[IMG_HDISP+5:0],per_img_clken};
+end
+assign matrix_img_clken = matrix_img_clken_r[IMG_HDISP+6];
 
 //----------------------------------------------------------------------
 //            [p11,p12,p13]   [-1,0,1]
@@ -138,7 +151,7 @@ sqrt u_sqrt
 reg             [15:0]          matrix_img_vsync_r1;
 reg             [15:0]          matrix_img_href_r1;
 reg             [15:0]          matrix_edge_flag_r1;
-reg             [18:0]          per_img_clken_r1;
+reg             [15:0]          matrix_img_clken_r1;
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
@@ -146,14 +159,14 @@ begin
         matrix_img_vsync_r1 <= 16'b0;
         matrix_img_href_r1  <= 16'b0;
         matrix_edge_flag_r1 <= 16'b0;
-        per_img_clken_r1    <= 19'b0;
+        matrix_img_clken_r1    <= 16'b0;
     end
     else
     begin
         matrix_img_vsync_r1 <= {matrix_img_vsync_r1[14:0],matrix_img_vsync};
         matrix_img_href_r1  <= {matrix_img_href_r1[14:0],matrix_img_href};
         matrix_edge_flag_r1 <= {matrix_edge_flag_r1[14:0],matrix_top_edge_flag | matrix_bottom_edge_flag | matrix_left_edge_flag | matrix_right_edge_flag};
-        per_img_clken_r1    <= {per_img_clken_r1[17:0], per_img_clken};
+        matrix_img_clken_r1    <= {matrix_img_clken_r1[14:0], matrix_img_clken};
     end
 end
 
@@ -181,7 +194,7 @@ begin
     begin
         post_img_vsync <= matrix_img_vsync_r1[15];
         post_img_href  <= matrix_img_href_r1[15];
-        post_img_clken <= per_img_clken_r1[18];
+        post_img_clken <= matrix_img_clken_r1[15];
     end
 end
 

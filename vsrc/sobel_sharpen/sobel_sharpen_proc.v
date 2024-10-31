@@ -16,8 +16,8 @@
 // *********************************************************************
 module sobel_sharpen_proc
 #(
-    parameter   [10:0]  IMG_HDISP = 11'd640,                //  640*480
-    parameter   [10:0]  IMG_VDISP = 11'd480
+    parameter   [11:0]  IMG_HDISP = 12'd640,                //  640*480
+    parameter   [11:0]  IMG_VDISP = 12'd480
 )
 (
     input  wire                 clk             ,

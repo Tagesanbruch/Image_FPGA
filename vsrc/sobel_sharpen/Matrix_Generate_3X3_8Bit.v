@@ -1,8 +1,8 @@
 module Matrix_Generate_3X3_8Bit
 #(
-    parameter   [10:0]  IMG_HDISP = 11'd640,            //  640*480
-    parameter   [10:0]  IMG_VDISP = 11'd480,
-    parameter   [10:0]  DELAY_NUM = 11'd10              //  Interval period from the penultimate row to the last row
+    parameter   [11:0]  IMG_HDISP = 12'd640,            //  640*480
+    parameter   [11:0]  IMG_VDISP = 12'd480,
+    parameter   [11:0]  DELAY_NUM = 12'd10              //  Interval period from the penultimate row to the last row
 )
 (
     //  global clock & reset
@@ -33,18 +33,18 @@ module Matrix_Generate_3X3_8Bit
 );
 //----------------------------------------------------------------------
 //  href & vsync counter
-reg             [10:0]          hcnt;
+reg             [11:0]          hcnt;
 
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
-        hcnt <= 11'b0;
+        hcnt <= 12'b0;
     else
     begin
         if(per_img_href == 1'b1)
             hcnt <= hcnt + 1'b1;
         else
-            hcnt <= 11'b0;
+            hcnt <= 12'b0;
     end
 end
 
@@ -60,16 +60,16 @@ end
 
 wire img_href_neg = ~per_img_href & per_img_href_dly;       //  falling edge of per_img_href
 
-reg             [10:0]          vcnt;
+reg             [11:0]          vcnt;
 
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
-        vcnt <= 11'b0;
+        vcnt <= 12'b0;
     else
     begin
         if(per_img_vsync == 1'b0)
-            vcnt <= 11'b0;
+            vcnt <= 12'b0;
         else if(img_href_neg == 1'b1)
             vcnt <= vcnt + 1'b1;
         else
@@ -79,20 +79,20 @@ end
 
 //----------------------------------------------------------------------
 //  two fifo for raw data buffer
-reg             [10:0]          extend_last_row_cnt;
+reg             [11:0]          extend_last_row_cnt;
 
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
-        extend_last_row_cnt <= 11'b0;
+        extend_last_row_cnt <= 12'b0;
     else
     begin
         if((per_img_href == 1'b1)&&(vcnt == IMG_VDISP - 1'b1)&&(hcnt == IMG_HDISP - 1'b1))
-            extend_last_row_cnt <= 11'd1;
-        else if((extend_last_row_cnt > 11'b0)&&(extend_last_row_cnt < DELAY_NUM + IMG_HDISP))
+            extend_last_row_cnt <= 12'd1;
+        else if((extend_last_row_cnt > 12'b0)&&(extend_last_row_cnt < DELAY_NUM + IMG_HDISP))
             extend_last_row_cnt <= extend_last_row_cnt + 1'b1;
         else
-            extend_last_row_cnt <= 11'b0;
+            extend_last_row_cnt <= 12'b0;
     end
 end
 
@@ -110,11 +110,11 @@ wire            [7:0]           fifo2_rdata;
 
 assign fifo1_wenb  = per_img_href;
 assign fifo1_wdata = per_img_gray;
-assign fifo1_renb  = per_img_href & (vcnt > 11'b0) | extend_last_row_en;
+assign fifo1_renb  = per_img_href & (vcnt > 12'b0) | extend_last_row_en;
 
-assign fifo2_wenb  = per_img_href & (vcnt > 11'b0);
+assign fifo2_wenb  = per_img_href & (vcnt > 12'b0);
 assign fifo2_wdata = fifo1_rdata;
-assign fifo2_renb  = per_img_href & (vcnt > 11'b1) | extend_last_row_en;
+assign fifo2_renb  = per_img_href & (vcnt > 12'b1) | extend_last_row_en;
 
 sync_fifo
 #(
