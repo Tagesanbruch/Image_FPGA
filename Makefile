@@ -4,10 +4,6 @@ endif
 
 ######################################################################
 
-# This is intended to be a minimal example.  Before copying this to start a
-# real project, it is better to start with a more complete example,
-# e.g. examples/make_tracing_c.
-
 # If $VERILATOR_ROOT isn't in the environment, we assume it is part of a
 # package install, and verilator is in your path. Otherwise find the
 # binary relative to $VERILATOR_ROOT (such as when inside the git sources).
@@ -43,29 +39,18 @@ BUILD_DIR = ./build/$(TEST)
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 default: $(BIN)
-
 	
 $(shell mkdir -p $(BUILD_DIR))
-# constraint file
-# SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
-# $(SRC_AUTO_BIND): $(NXDC_FILES)
-# 	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
-# project source
 VSRCS = $(shell find $(VSRC_PATH) -name "*.v" -or -name "*.sv")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 CXXSRCS = $(shell find $(abspath ./csrc) -name "*.cc" -or -name "*.cpp")
-# CSRCS += $(SRC_AUTO_BIND)
 
 ifeq ($(strip $(LOG)),)
 	LOGFLAGS ?=
 else
     LOGFLAGS = --log=$(LOG)
 endif
-
-# LOG ?= --l $(BUILD_DIR)/npc-log.txt
-# rules for NVBoard
-# include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 # llvm
 CXXFLAGS += $(shell llvm-config-11 --cxxflags) -fPIE
@@ -108,6 +93,11 @@ run: $(BIN)
 verify: 
 	@echo "Verify image"
 	python3 utils/csv_to_image.py -i $(OUTPUT_PATH) -o $(OUTPUTIMAGE_PATH)
+
+verifyrgb: 
+	@echo "Verify image"
+	python3 utils/csv_to_image_rgb.py -i $(OUTPUT_PATH) -o $(OUTPUTIMAGE_PATH)
+
 
 gtkwave:
 	gtkwave ./wave.fst ./gtkwave.gtkw

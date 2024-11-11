@@ -54,12 +54,20 @@ module TOP
 
 
 // Define parameters for nearest_interpolation
+// localparam C_SRC_IMG_WIDTH  = 11'd640;
+// localparam C_SRC_IMG_HEIGHT = 11'd480;
+// localparam C_DST_IMG_WIDTH  = 11'd1024;
+// localparam C_DST_IMG_HEIGHT = 11'd768;
+// localparam C_X_RATIO        = 16'd40960; // floor(C_SRC_IMG_WIDTH/C_DST_IMG_WIDTH*2^16)
+// localparam C_Y_RATIO        = 16'd40960; // floor(C_SRC_IMG_HEIGHT/C_DST_IMG_HEIGHT*2^16)
+
 localparam C_SRC_IMG_WIDTH  = 11'd640;
 localparam C_SRC_IMG_HEIGHT = 11'd480;
-localparam C_DST_IMG_WIDTH  = 11'd1024;
-localparam C_DST_IMG_HEIGHT = 11'd768;
-localparam C_X_RATIO        = 16'd40960; // floor(C_SRC_IMG_WIDTH/C_DST_IMG_WIDTH*2^16)
-localparam C_Y_RATIO        = 16'd40960; // floor(C_SRC_IMG_HEIGHT/C_DST_IMG_HEIGHT*2^16)
+localparam C_DST_IMG_WIDTH  = 11'd1600;
+localparam C_DST_IMG_HEIGHT = 11'd900;
+localparam C_X_RATIO        = 16'd26214; // floor(C_SRC_IMG_WIDTH/C_DST_IMG_WIDTH*2^16)
+localparam C_Y_RATIO        = 16'd34952; // floor(C_SRC_IMG_HEIGHT/C_DST_IMG_HEIGHT*2^16)
+
 
 wire				mid1_frame_vsync;
 wire				mid1_frame_href;

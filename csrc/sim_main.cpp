@@ -19,6 +19,13 @@ int data_count = 0;
 #define CONFIG_TRACE_MAX 20000000
 #endif
 #include "verilated_fst_c.h"
+
+// #define USE_DIV
+
+#ifdef USE_DIV
+#define CLK_DIV 6
+#endif
+
 VerilatedFstC* tfp = NULL;
 #endif
 VerilatedContext* contextp = NULL;
@@ -26,6 +33,7 @@ VTOP* top = NULL;
 int trace_time = 0;
 
 int image_width = 640, image_height = 480;
+int hcnt = 0;
 char* image_file;
 char* param_file;
 char* output_dir;
@@ -38,17 +46,28 @@ bool prev_post_frame_href = false;
 bool prev_post_frame_clken = false;
 
 void monitor_output() {
-  // monitoring output
   // posedge clk
   if (top->clk) {
     if (top->post_frame_href && top->post_frame_vsync) {
-      csv_file << static_cast<int>(top->post_img_Y) << ","
-               << static_cast<int>(top->post_img_Cb) << ","
-               << static_cast<int>(top->post_img_Cr) << "\n";
-      printf("Y: %d, Cb: %d, Cr: %d, X: %d, y: %d\n",
-             static_cast<int>(top->post_img_Y),
-             static_cast<int>(top->post_img_Cb),
-             static_cast<int>(top->post_img_Cr), data_count, line_count);
+      if (top->post_img_mode == 0) {
+        // YCbCr mode
+        csv_file << static_cast<int>(top->post_img_Y) << ","
+                 << static_cast<int>(top->post_img_Cb) << ","
+                 << static_cast<int>(top->post_img_Cr) << "\n";
+        printf("Y: %d, Cb: %d, Cr: %d, x: %d, y: %d\n",
+               static_cast<int>(top->post_img_Y),
+               static_cast<int>(top->post_img_Cb),
+               static_cast<int>(top->post_img_Cr), data_count, line_count);
+      } else if (top->post_img_mode == 1) {
+        // RGB888 mode
+        csv_file << static_cast<int>(top->post_img_red) << ","
+                 << static_cast<int>(top->post_img_green) << ","
+                 << static_cast<int>(top->post_img_blue) << "\n";
+        printf("R: %d, G: %d, B: %d, x: %d, y: %d\n",
+               static_cast<int>(top->post_img_red),
+               static_cast<int>(top->post_img_green),
+               static_cast<int>(top->post_img_blue), data_count, line_count);
+      }
       data_count++;
     }
   }
@@ -56,14 +75,15 @@ void monitor_output() {
   // negedge href
   if (prev_post_frame_href && !top->post_frame_href) {
     line_count++;
+    hcnt = data_count;
     data_count = 0;
   }
 
   // negedge vsync
   if (prev_post_frame_vsync && !top->post_frame_vsync && line_count > 0) {
     param_file_stream << "Height: " << line_count << "\n";
-    param_file_stream << "Width: " << image_width << "\n";
-    printf("Height: %d, Width: %d\n", line_count, image_width);
+    param_file_stream << "Width: " << hcnt << "\n";
+    printf("Height: %d, Width: %d\n", line_count, hcnt);
     csv_file.close();
     param_file_stream.close();
   }
@@ -73,6 +93,56 @@ void monitor_output() {
   prev_post_frame_clken = top->post_frame_clken;
 }
 
+#ifdef USE_DIV
+void step_with_div(int n) {
+  int clk_div_counter = 0;
+  int clk_div_state = 1;
+
+  auto update_clk_div = [&]() {
+    if (clk_div_counter == 0) {
+      clk_div_state = !clk_div_state;
+      clk_div_counter = n - 1;
+    } else {
+      clk_div_counter--;
+    }
+    top->clk_div_2 = clk_div_state;
+  };
+
+  for (int i = 0; i < n; ++i) {
+    top->clk = 1;
+    update_clk_div();
+    top->eval();
+    monitor_output();
+#ifdef TRACE
+    if (trace_time++ < CONFIG_TRACE_MAX) {
+      tfp->dump(contextp->time());
+      contextp->timeInc(1);
+    }
+#endif
+
+    top->clk = 0;
+    update_clk_div();
+    top->eval();
+    monitor_output();
+#ifdef TRACE
+    if (trace_time++ < CONFIG_TRACE_MAX) {
+      tfp->dump(contextp->time());
+      contextp->timeInc(1);
+    }
+#endif
+  }
+}
+
+void step() {
+  step_with_div(CLK_DIV);
+}
+
+void step(int n) {
+  while (n--) {
+    step_with_div(CLK_DIV);
+  }
+}
+#else
 void step() {
   top->clk = 1;
   top->eval();
@@ -94,30 +164,12 @@ void step() {
 #endif
 }
 
-void step_no_inst() {
-  top->clk = 0;
-  top->eval();
-#ifdef TRACE
-  if (trace_time++ < CONFIG_TRACE_MAX) {
-    tfp->dump(contextp->time());
-    contextp->timeInc(1);
-  }
-#endif
-  top->clk = 0;
-  top->eval();
-#ifdef TRACE
-  if (trace_time++ < CONFIG_TRACE_MAX) {
-    tfp->dump(contextp->time());
-    contextp->timeInc(1);
-  }
-#endif
-}
-
 void step(int n) {
   while (n--) {
     step();
   }
 }
+#endif
 
 void reset(int n) {
   top->rst_n = 0;

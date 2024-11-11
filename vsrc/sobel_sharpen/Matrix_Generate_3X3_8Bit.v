@@ -119,7 +119,7 @@ assign fifo2_renb  = per_img_href & (vcnt > 12'b1) | extend_last_row_en;
 sync_fifo
 #(
     .C_FIFO_WIDTH   (8      ),
-    .C_FIFO_DEPTH   (1024   )
+    .C_FIFO_DEPTH   (2048   )
 )
 u1_sync_fifo
 (
@@ -139,7 +139,7 @@ u1_sync_fifo
 sync_fifo
 #(
     .C_FIFO_WIDTH   (8      ),
-    .C_FIFO_DEPTH   (1024   )
+    .C_FIFO_DEPTH   (2048   )
 )
 u2_sync_fifo
 (
