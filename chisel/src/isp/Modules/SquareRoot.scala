@@ -3,8 +3,6 @@ import chisel3.util._
 
 class Sqrt extends Module {
   val io = IO(new Bundle {
-    val sys_clk = Input(Clock())
-    val sys_rst = Input(Bool())
     val din = Input(UInt(21.W))
     val din_valid = Input(Bool())
     val dout = Output(UInt(11.W))

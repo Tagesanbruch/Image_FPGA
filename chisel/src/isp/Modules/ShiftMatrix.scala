@@ -20,11 +20,12 @@ class ShiftMatrix(N: Int, FIFO_DEPTH: Int, DATA_WIDTH: Int, IMG_HDISP: Int, IMG_
   val vcnt = RegInit(0.U(12.W))
   val extend_last_row_cnt = RegInit(0.U(12.W))
   val per_img_href_dly = RegNext(io.per_img_href, 0.B)
-  val img_href_neg = !io.per_img_href && per_img_href_dly
+  val img_href_neg = dontTouch(WireInit(0.U))
+  img_href_neg := !io.per_img_href && per_img_href_dly
   val extend_last_row_en = Wire(Bool())
 
   hcnt := Mux(io.per_img_href, hcnt + 1.U, 0.U)
-  vcnt := Mux(io.per_img_vsync, 0.U, Mux(img_href_neg, vcnt + 1.U, vcnt))
+  vcnt := Mux(io.per_img_vsync === 0.U, 0.U, Mux(img_href_neg === 1.U, vcnt + 1.U, vcnt))
 
   extend_last_row_cnt :=
     Mux(
@@ -52,12 +53,10 @@ class ShiftMatrix(N: Int, FIFO_DEPTH: Int, DATA_WIDTH: Int, IMG_HDISP: Int, IMG_
     }
   }
 
-  for (i <- 0 until N) {
-    when(i.U === 0.U) {
-      io.matrix(i) := VecInit(io.matrix(i).tail :+ io.per_img_gray)
-    } .otherwise {
+  io.matrix(0) := VecInit(io.matrix(0).tail :+ io.per_img_gray)
+
+  for (i <- 1 until N) {
       io.matrix(i) := VecInit(io.matrix(i).tail :+ fifos(i - 1).io.dout)
-    }
   }
 
   io.matrix_top_edge_flag := vcnt < (N.U - 1.U)

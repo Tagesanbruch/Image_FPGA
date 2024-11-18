@@ -11,7 +11,6 @@ import chisel3.util._
 class isp_bus extends Bundle {
   val frame_vsync  = Output(Bool())
   val frame_href   = Output(Bool())
-  val frame_clken  = Output(Bool())
   val frame_mode   = Output(UInt(8.W))
   val img_red      = Output(UInt(8.W))
   val img_green    = Output(UInt(8.W))
@@ -19,4 +18,5 @@ class isp_bus extends Bundle {
   val img_Y        = Output(UInt(8.W))
   val img_Cb       = Output(UInt(8.W))
   val img_Cr       = Output(UInt(8.W))
+  val img_bit      = Output(Bool())
 }

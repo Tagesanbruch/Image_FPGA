@@ -51,7 +51,7 @@ sim:
 		cd ./verilator/isp && make run ; \
 	else \
 		echo "Changes detected in ./src"; \
-		make verilog; \
+		make verilog || exit 1; \
 		cp -r ./verilator/isp/vsrc ./verilator/isp/vsrc_backup; \
 		rm -rf ./verilator/isp/vsrc/*; \
 		cp ./build/*.v ./verilator/isp/vsrc; \

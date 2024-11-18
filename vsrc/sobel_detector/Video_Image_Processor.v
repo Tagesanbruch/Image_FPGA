@@ -38,6 +38,9 @@ module TOP
 	output		[7:0]	post_img_Y,			//Processed Image brightness output
 	output		[7:0]	post_img_Cb,			//Processed Image blue shading output
 	output		[7:0]	post_img_Cr,			//Processed Image red shading output
+	output		[7:0]	post_img_red,			//Processed Image red output
+	output		[7:0]	post_img_green,			//Processed Image green output
+	output		[7:0]	post_img_blue,			//Processed Image blue output
 	output 				post_img_bit
 );
 
@@ -108,5 +111,6 @@ sobel_detector
 assign post_img_Y = {8{post_img_bit}};
 assign post_img_Cb = 0;
 assign post_img_Cr = 0;
+assign post_img_mode = 'b0;
 
 endmodule

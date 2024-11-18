@@ -11,8 +11,9 @@ std::ofstream param_file_stream;
 int line_count = 0;
 int data_count = 0;
 
-#define RGB888 0
-#define YCbCr422 3
+#define ISP_MODE_RGB888 0
+#define ISP_MODE_GRAY 2
+#define ISP_MODE_YCBCR422 3
 
 // #ifdef CONFIG_TRACE
 #define TRACE
@@ -51,8 +52,9 @@ bool prev_io_post_isp_bus_frame_clken = false;
 void monitor_output() {
   // posedge clk
   if (top->clock) {
+    // printf("mode = %d;\n", top->io_post_isp_bus_frame_mode);
     if (top->io_post_isp_bus_frame_href && top->io_post_isp_bus_frame_vsync) {
-      if (top->io_post_isp_bus_frame_mode == YCbCr422) {
+      if (top->io_post_isp_bus_frame_mode == ISP_MODE_YCBCR422) {
         // YCbCr mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_Y) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_Cb) << ","
@@ -61,7 +63,16 @@ void monitor_output() {
                static_cast<int>(top->io_post_isp_bus_img_Y),
                static_cast<int>(top->io_post_isp_bus_img_Cb),
                static_cast<int>(top->io_post_isp_bus_img_Cr), data_count, line_count);
-      } else if (top->io_post_isp_bus_frame_mode == RGB888) {
+      } else if (top->io_post_isp_bus_frame_mode == ISP_MODE_GRAY) {
+        // YCbCr mode
+        csv_file << static_cast<int>(top->io_post_isp_bus_img_Y) << ","
+                 << static_cast<int>(top->io_post_isp_bus_img_Cb) << ","
+                 << static_cast<int>(top->io_post_isp_bus_img_Cr) << "\n";
+        printf("Y: %d, Cb: %d, Cr: %d, x: %d, y: %d\n",
+               static_cast<int>(top->io_post_isp_bus_img_Y),
+               static_cast<int>(top->io_post_isp_bus_img_Cb),
+               static_cast<int>(top->io_post_isp_bus_img_Cr), data_count, line_count);
+      } else if (top->io_post_isp_bus_frame_mode == ISP_MODE_RGB888) {
         // RGB888 mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_red) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_green) << ","
@@ -93,7 +104,7 @@ void monitor_output() {
 
   prev_io_post_isp_bus_frame_vsync = top->io_post_isp_bus_frame_vsync;
   prev_io_post_isp_bus_frame_href = top->io_post_isp_bus_frame_href;
-  prev_io_post_isp_bus_frame_clken = top->io_post_isp_bus_frame_clken;
+  // prev_io_post_isp_bus_frame_clken = top->io_post_isp_bus_frame_clken;
 }
 
 #ifdef USE_DIV
