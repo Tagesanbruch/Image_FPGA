@@ -5,6 +5,7 @@ venv/*
 .vscode/*
 resources/*
 backup/*
+.metals/*
 
 *.vcd
 *.fst
