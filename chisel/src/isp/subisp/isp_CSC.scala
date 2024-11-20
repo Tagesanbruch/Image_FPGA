@@ -1,7 +1,10 @@
+package subisp
+
 import chisel3._
 import chisel3.util._
+import Modules._
 
-class Image_RGB888_YCbCr444 extends Module {
+class CSC(BITS: Int = 8, DELAY_NUM: Int = 5) extends Module {
     val io = IO(new Bundle {
         val per_isp_bus = Flipped(new isp_bus)
         val post_isp_bus = new isp_bus
@@ -48,7 +51,7 @@ class Image_RGB888_YCbCr444 extends Module {
 
     io.post_isp_bus.frame_vsync := vsync_ShiftReg.io.dout
     io.post_isp_bus.frame_href := href_ShiftReg.io.dout
-    io.post_isp_bus.frame_mode := ISPMode.YCbCr444.id.U
+    io.post_isp_bus.frame_mode := ISPMode.YCbCr422.id.U
     io.post_isp_bus.img_red := 0.U
     io.post_isp_bus.img_green := 0.U
     io.post_isp_bus.img_blue := 0.U

@@ -1,8 +1,10 @@
 import chisel3._
 import chisel3.util._
 import chisel3.SpecifiedDirection.Flip
+import Modules._
+import subisp._
 
-class SobelDetector(IMG_HDISP: Int, IMG_VDISP: Int, DELAY_NUM: Int)
+class SobelDetector(IMG_HDISP: Int = 1920, IMG_VDISP: Int = 1080, DELAY_NUM: Int = 5)
     extends Module {
     val io = IO(new Bundle {
         val thresh = Input(UInt(8.W))
@@ -56,10 +58,12 @@ class SobelDetector(IMG_HDISP: Int, IMG_VDISP: Int, DELAY_NUM: Int)
     sqrt.io.din_valid := true.B
     G_data := sqrt.io.dout
 
-    //  lag 16 clocks signal sync
-    val vsync_ShiftReg = Module(new ShiftReg(16, ShiftRegDirection.Left))
-    val href_ShiftReg = Module(new ShiftReg(16, ShiftRegDirection.Left))
-    val edge_flag_ShiftReg = Module(new ShiftReg(16, ShiftRegDirection.Left))
+    //  lag DELAY_PERIOD clocks signal sync
+
+    val DELAY_PERIOD = DELAY_NUM + 16
+    val vsync_ShiftReg = Module(new ShiftReg(DELAY_PERIOD + 2 * IMG_HDISP, ShiftRegDirection.Left))// 2 lines
+    val href_ShiftReg = Module(new ShiftReg(DELAY_PERIOD + 2 * IMG_HDISP, ShiftRegDirection.Left))// 2 lines
+    val edge_flag_ShiftReg = Module(new ShiftReg(DELAY_PERIOD, ShiftRegDirection.Left))
 
     vsync_ShiftReg.io.din := matrix.io.matrix_img_vsync
     href_ShiftReg.io.din := matrix.io.matrix_img_href

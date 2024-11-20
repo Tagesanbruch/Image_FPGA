@@ -14,6 +14,7 @@ int data_count = 0;
 #define ISP_MODE_RGB888 0
 #define ISP_MODE_GRAY 2
 #define ISP_MODE_YCBCR422 3
+#define ISP_MODE_RAW_BGGR 4
 
 // #ifdef CONFIG_TRACE
 #define TRACE
@@ -29,6 +30,9 @@ int data_count = 0;
 #ifdef USE_DIV
 #define CLK_DIV 6
 #endif
+
+#define INPUT_RAW
+// #define INPUT_RGB
 
 VerilatedFstC* tfp = NULL;
 #endif
@@ -50,11 +54,11 @@ bool prev_io_post_isp_bus_frame_href = false;
 bool prev_io_post_isp_bus_frame_clken = false;
 
 void monitor_output() {
+  int post_isp_mode = top->io_post_isp_bus_frame_mode;
   // posedge clk
   if (top->clock) {
-    // printf("mode = %d;\n", top->io_post_isp_bus_frame_mode);
     if (top->io_post_isp_bus_frame_href && top->io_post_isp_bus_frame_vsync) {
-      if (top->io_post_isp_bus_frame_mode == ISP_MODE_YCBCR422) {
+      if (post_isp_mode == ISP_MODE_YCBCR422) {
         // YCbCr mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_Y) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_Cb) << ","
@@ -63,7 +67,7 @@ void monitor_output() {
                static_cast<int>(top->io_post_isp_bus_img_Y),
                static_cast<int>(top->io_post_isp_bus_img_Cb),
                static_cast<int>(top->io_post_isp_bus_img_Cr), data_count, line_count);
-      } else if (top->io_post_isp_bus_frame_mode == ISP_MODE_GRAY) {
+      } else if (post_isp_mode == ISP_MODE_GRAY) {
         // YCbCr mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_Y) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_Cb) << ","
@@ -72,7 +76,7 @@ void monitor_output() {
                static_cast<int>(top->io_post_isp_bus_img_Y),
                static_cast<int>(top->io_post_isp_bus_img_Cb),
                static_cast<int>(top->io_post_isp_bus_img_Cr), data_count, line_count);
-      } else if (top->io_post_isp_bus_frame_mode == ISP_MODE_RGB888) {
+      } else if (post_isp_mode == ISP_MODE_RGB888) {
         // RGB888 mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_red) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_green) << ","
@@ -81,6 +85,11 @@ void monitor_output() {
                static_cast<int>(top->io_post_isp_bus_img_red),
                static_cast<int>(top->io_post_isp_bus_img_green),
                static_cast<int>(top->io_post_isp_bus_img_blue), data_count, line_count);
+      } else if (post_isp_mode == ISP_MODE_RAW_BGGR) {
+        // RAW BGGR mode
+        csv_file << static_cast<int>(top->io_post_isp_bus_img_raw) << "\n";
+        printf("RAW: %d, x: %d, y: %d\n",
+               static_cast<int>(top->io_post_isp_bus_img_raw), data_count, line_count);
       }
       data_count++;
     }
@@ -95,6 +104,16 @@ void monitor_output() {
 
   // negedge vsync
   if (prev_io_post_isp_bus_frame_vsync && !top->io_post_isp_bus_frame_vsync && line_count > 0) {
+    //output mode
+    if (post_isp_mode == ISP_MODE_YCBCR422) {
+      param_file_stream << "Mode: YCbCr422\n";
+    } else if (post_isp_mode == ISP_MODE_GRAY) {
+      param_file_stream << "Mode: Gray\n";
+    } else if (post_isp_mode == ISP_MODE_RGB888) {
+      param_file_stream << "Mode: RGB888\n";
+    } else if (post_isp_mode == ISP_MODE_RAW_BGGR) {
+      param_file_stream << "Mode: RAW_BGGR\n";
+    }
     param_file_stream << "Height: " << line_count << "\n";
     param_file_stream << "Width: " << hcnt << "\n";
     printf("Height: %d, Width: %d\n", line_count, hcnt);
@@ -203,6 +222,8 @@ void sim_image_data(const char* csv_file_path) {
   int r, g, b;
   int hcnt = 0, vcnt = 0;
   top->io_per_isp_bus_frame_vsync = 1;
+
+  #ifdef INPUT_RGB
   while (fscanf(file, "%d,%d,%d", &r, &g, &b) == 3) {
     top->io_per_isp_bus_img_red = r;
     top->io_per_isp_bus_img_green = g;
@@ -227,6 +248,28 @@ void sim_image_data(const char* csv_file_path) {
       }
     }
   }
+  #else
+  // input as raw
+  while (fscanf(file, "%d", &r) == 1) {
+    top->io_per_isp_bus_img_raw = r;
+    top->io_per_isp_bus_frame_href = 1;
+    step();
+    hcnt++;
+    if (hcnt == image_width) {
+      hcnt = 0;
+      vcnt++;
+      top->io_per_isp_bus_frame_href = 0;
+      step(5);
+      printf("End of line[%d]\n", vcnt);
+      if (vcnt == image_height) {
+        top->io_per_isp_bus_frame_vsync = 0;
+        printf("End of image\n");
+        step(100000);
+        break;
+      }
+    }
+  }
+  #endif
   fclose(file);
 }
 

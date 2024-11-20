@@ -16,6 +16,7 @@
 build/
 .src/*
 playground_bk/
+src/bak/*
 
 # mill
 out/*

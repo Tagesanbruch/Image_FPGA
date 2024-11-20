@@ -89,8 +89,14 @@ bin2hex:
 gtkwave:
 	cd ./verilator/isp && make gtkwave
 
+preprocess:
+	cd ./verilator/isp && make preprocess
+
 verify:
 	cd ./verilator/isp && make verify
+
+verifyrgb:
+	cd ./verilator/isp && make verifyrgb
 
 # ---------------------AM TARGET--------------------------
 

@@ -1,3 +1,5 @@
+package subisp
+
 import chisel3._
 import chisel3.util._
 
@@ -12,6 +14,7 @@ class isp_bus extends Bundle {
   val frame_vsync  = Output(Bool())
   val frame_href   = Output(Bool())
   val frame_mode   = Output(UInt(8.W))
+  val img_raw      = Output(UInt(8.W))
   val img_red      = Output(UInt(8.W))
   val img_green    = Output(UInt(8.W))
   val img_blue     = Output(UInt(8.W))
