@@ -46,7 +46,7 @@ class BCC(BITS: Int = 8, DELAY_NUM: Int = 5) extends Module {
 
     io.post_isp_bus.frame_href := in_href.io.dout
     io.post_isp_bus.frame_vsync := in_vsync.io.dout
-    io.post_isp_bus.frame_mode := ISPMode.YCbCr444.id.U
+    io.post_isp_bus.frame_mode := ISPMode.YCbCr422.id.U
 
     io.post_isp_bus.img_Y := BCC_Y2
     io.post_isp_bus.img_Cb := io.per_isp_bus.img_Cb

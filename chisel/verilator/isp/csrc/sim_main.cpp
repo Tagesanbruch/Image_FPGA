@@ -14,6 +14,8 @@ int data_count = 0;
 #define ISP_MODE_RGB888 0
 #define ISP_MODE_GRAY 2
 #define ISP_MODE_YCBCR422 3
+#define ISP_MODE_YCBCR420 6
+#define ISP_MODE_YCBCR444 7
 #define ISP_MODE_RAW_BGGR 4
 
 // #ifdef CONFIG_TRACE
@@ -58,7 +60,7 @@ void monitor_output() {
   // posedge clk
   if (top->clock) {
     if (top->io_post_isp_bus_frame_href && top->io_post_isp_bus_frame_vsync) {
-      if (post_isp_mode == ISP_MODE_YCBCR422) {
+      if (post_isp_mode == ISP_MODE_YCBCR422 || post_isp_mode == ISP_MODE_YCBCR420 || post_isp_mode == ISP_MODE_YCBCR444) {
         // YCbCr mode
         csv_file << static_cast<int>(top->io_post_isp_bus_img_Y) << ","
                  << static_cast<int>(top->io_post_isp_bus_img_Cb) << ","
@@ -105,7 +107,7 @@ void monitor_output() {
   // negedge vsync
   if (prev_io_post_isp_bus_frame_vsync && !top->io_post_isp_bus_frame_vsync && line_count > 0) {
     //output mode
-    if (post_isp_mode == ISP_MODE_YCBCR422) {
+    if (post_isp_mode == ISP_MODE_YCBCR422 || post_isp_mode == ISP_MODE_YCBCR420 || post_isp_mode == ISP_MODE_YCBCR444) {
       param_file_stream << "Mode: YCbCr422\n";
     } else if (post_isp_mode == ISP_MODE_GRAY) {
       param_file_stream << "Mode: Gray\n";
@@ -212,13 +214,26 @@ void reset(int n) {
   top->reset = 0;
 }
 
+void apb_write(int addr, int data) {
+  top->io_APB_waddr = addr;
+  top->io_APB_wdata = data;
+  top->io_APB_wvalid = 1;
+  step();
+  top->io_APB_wvalid = 0;
+  top->io_APB_waddr = 0;
+  top->io_APB_wdata = 0;
+  step();
+}
+
 void sim_image_data(const char* csv_file_path) {
   FILE* file = fopen(csv_file_path, "r");
   if (!file) {
     perror("Failed to open CSV file");
     return;
   }
-
+  apb_write(0xF01F0018, 0x00000000);
+  apb_write(0xF01F001C, 0x00000000);
+  apb_write(0xF01F0030, 0x00000003);
   int r, g, b;
   int hcnt = 0, vcnt = 0;
   top->io_per_isp_bus_frame_vsync = 1;
@@ -272,6 +287,7 @@ void sim_image_data(const char* csv_file_path) {
   #endif
   fclose(file);
 }
+
 
 void load_param_data(const char* param_file_path) {
   FILE* file = fopen(param_file_path, "r");

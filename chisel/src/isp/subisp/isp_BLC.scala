@@ -28,11 +28,11 @@ class BLC(
 
     val per_frame_vsync = RegInit(false.B)
     val per_frame_href = RegInit(false.B)
-    val per_img_raw = RegInit(0.S(10.W))
+    val per_img_raw = RegInit(0.U(10.W))
 
     per_frame_vsync := io.per_isp_bus.frame_vsync
     per_frame_href := io.per_isp_bus.frame_href
-    per_img_raw := io.per_isp_bus.img_raw.asSInt
+    per_img_raw := io.per_isp_bus.img_raw
 
     val per_img_raw_dly = RegNext(io.per_isp_bus.img_raw, 0.U)
 
@@ -49,13 +49,19 @@ class BLC(
     alpha_r := io.I_alpha * per_img_raw_dly
     beta_b := io.I_beta * per_img_raw_dly
 
+    val gb_add = Wire(UInt(16.W))
+    val gr_add = Wire(UInt(16.W))
+
+    gb_add := ClipAdd(per_img_raw, io.I_gb_offset) + (beta_b >> 8)
+    gr_add := ClipAdd(per_img_raw, io.I_gr_offset) + (alpha_r >> 8)
+
     post_img_raw := MuxCase(
-      per_img_raw.asUInt,
+      per_img_raw,
       Seq(
-        (oddline && oddcol) -> (per_img_raw + io.I_b_offset).asUInt,
-        (oddline && !oddcol) -> ((per_img_raw + io.I_gb_offset).asUInt + (beta_b >> 8)),
-        (!oddline && oddcol) -> ((per_img_raw + io.I_gr_offset).asUInt + (alpha_r >> 8)),
-        (!oddline && !oddcol) -> (per_img_raw + io.I_r_offset).asUInt
+        (oddline && oddcol) -> ClipAdd(per_img_raw, io.I_b_offset),
+        (oddline && !oddcol) -> Mux(gb_add > 255.U, 255.U, gb_add),
+        (!oddline && oddcol) -> Mux(gr_add > 255.U, 255.U, gr_add),
+        (!oddline && !oddcol) -> ClipAdd(per_img_raw, io.I_r_offset)
       )
     )
 

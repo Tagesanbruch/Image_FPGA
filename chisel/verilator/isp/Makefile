@@ -65,8 +65,8 @@ IMAGE_PATH = ./inputImage
 CSV_PATH = $(abspath ./tempFile/originalImage_csv)
 OUTPUT_PATH = $(abspath ./tempFile/outputImage_csv)
 OUTPUTIMAGE_PATH = $(abspath ./outputImage)
-TEST_TARGET ?= Sun1920
-# TEST_TARGET ?= Scart640
+# TEST_TARGET ?= Sun1920
+TEST_TARGET ?= Scart640
 
 CSVFLAGS = --csv=$(CSV_PATH)/$(TEST_TARGET).csv
 PARAMFLAGS = --param=$(CSV_PATH)/$(TEST_TARGET).txt
