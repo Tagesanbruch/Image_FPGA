@@ -13,11 +13,14 @@
 !/playground/src/*
 !build.sc
 !README.md
+!*.py
+!*.gtkw
 build/
 .src/*
 playground_bk/
 src/bak/*
 verilator/isp/vsrc_backup
+
 # mill
 out/*
 .bsp/

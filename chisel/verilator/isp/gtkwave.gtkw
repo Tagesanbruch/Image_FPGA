@@ -1,0 +1,99 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Wed Nov 20 17:14:37 2024
+[*]
+[dumpfile] "/home/unix20/workspace_image/chisel/verilator/isp/wave.fst"
+[dumpfile_mtime] "Wed Nov 20 15:44:02 2024"
+[dumpfile_size] 122692334
+[savefile] "/home/unix20/workspace_image/chisel/verilator/isp/gtkwave.gtkw"
+[timestart] 1374002
+[size] 1908 999
+[pos] -1 -1
+*-2.000000 1206 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.ISP.
+[treeopen] TOP.ISP.CFA.
+[treeopen] TOP.ISP.CFA_verilog.
+[treeopen] TOP.ISP.SobelDetector.
+[treeopen] TOP.ISP.SobelDetector.matrix.
+[sst_width] 317
+[signals_width] 347
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+TOP.ISP.SobelDetector.clock
+TOP.ISP.SobelDetector.io_per_isp_bus_frame_href
+TOP.ISP.BLC.io_per_isp_bus_frame_href
+TOP.ISP.CFA.clock
+@22
+TOP.ISP.CFA.hcnt[11:0]
+@28
+TOP.ISP.CFA.img_href_neg
+TOP.ISP.CFA.io_per_isp_bus_frame_href
+TOP.ISP.CFA.io_per_isp_bus_frame_vsync
+@22
+TOP.ISP.CFA.io_per_isp_bus_img_raw[7:0]
+@28
+TOP.ISP.CFA.io_post_isp_bus_frame_href
+TOP.ISP.CFA.io_post_isp_bus_frame_vsync
+@22
+TOP.ISP.CFA.io_post_isp_bus_img_blue[7:0]
+TOP.ISP.CFA.io_post_isp_bus_img_green[7:0]
+TOP.ISP.CFA.io_post_isp_bus_img_red[7:0]
+@23
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_11[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_12[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_13[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_21[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_22[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_23[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_31[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_32[7:0]
+[color] 2
+TOP.ISP.CFA_verilog.raw_v_h_33[7:0]
+@28
+TOP.ISP.CFA.per_frame_href
+TOP.ISP.CFA.per_frame_href_dly
+TOP.ISP.CFA.per_frame_vsync
+@22
+TOP.ISP.CFA.per_img_raw[7:0]
+@28
+TOP.ISP.CFA.reset
+@22
+[color] 3
+TOP.ISP.CFA.rgb_b[9:0]
+[color] 3
+TOP.ISP.CFA.rgb_g[9:0]
+[color] 3
+TOP.ISP.CFA.rgb_r[9:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_0_0[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_0_1[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_0_2[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_1_0[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_1_1[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_1_2[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_2_0[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_2_1[7:0]
+[color] 3
+TOP.ISP.CFA.matrix.MatrixReg_2_2[7:0]
+TOP.ISP.CFA_verilog.O_rgb_b[7:0]
+TOP.ISP.CFA_verilog.O_rgb_g[7:0]
+TOP.ISP.CFA_verilog.O_rgb_r[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
