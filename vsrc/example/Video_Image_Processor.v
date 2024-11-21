@@ -41,6 +41,7 @@ module TOP
 	output		[7:0]	post_img_red,			//Processed Image red output
 	output		[7:0]	post_img_green,			//Processed Image green output
 	output		[7:0]	post_img_blue,			//Processed Image blue output
+	output		[7:0]	post_img_raw,			//Processed Image raw output
 	output 				post_img_bit
 );
 
@@ -70,6 +71,6 @@ Image_RGB888_YCbCr444	u_VIP_RGB888_YCbCr444
 	.post_img_Cr		(post_img_Cr)			//Processed Image red shading output
 );
 
-assign post_img_mode = 1;
+assign post_img_mode = 0;
 
 endmodule

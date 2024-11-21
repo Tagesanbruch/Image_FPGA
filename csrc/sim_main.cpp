@@ -22,6 +22,8 @@ int data_count = 0;
 
 // #define USE_DIV
 
+#define INPUT_RGB
+
 #ifdef USE_DIV
 #define CLK_DIV 6
 #endif
@@ -50,7 +52,7 @@ void monitor_output() {
   if (top->clk) {
     if (top->post_frame_href && top->post_frame_vsync) {
       if (top->post_img_mode == 0) {
-        // YCbCr mode
+        // Gray mode
         csv_file << static_cast<int>(top->post_img_Y) << ","
                  << static_cast<int>(top->post_img_Cb) << ","
                  << static_cast<int>(top->post_img_Cr) << "\n";
@@ -67,6 +69,11 @@ void monitor_output() {
                static_cast<int>(top->post_img_red),
                static_cast<int>(top->post_img_green),
                static_cast<int>(top->post_img_blue), data_count, line_count);
+      } else if (top->post_img_mode == 2) { //raw
+        // RAW BGGR mode
+        csv_file << static_cast<int>(top->post_img_raw) << "\n";
+        printf("RAW: %d, x: %d, y: %d\n",
+               static_cast<int>(top->post_img_raw), data_count, line_count);
       }
       data_count++;
     }
@@ -81,6 +88,16 @@ void monitor_output() {
 
   // negedge vsync
   if (prev_post_frame_vsync && !top->post_frame_vsync && line_count > 0) {
+    if(top->post_img_mode == 0) {
+      // Gray mode
+      param_file_stream << "Mode: Gray\n";
+    } else if (top->post_img_mode == 1) {
+      // RGB888 mode
+      param_file_stream << "Mode: RGB888\n";
+    } else if (top->post_img_mode == 2) {
+      // RAW mode
+      param_file_stream << "Mode: RAW_BGGR\n";
+    }
     param_file_stream << "Height: " << line_count << "\n";
     param_file_stream << "Width: " << hcnt << "\n";
     printf("Height: %d, Width: %d\n", line_count, hcnt);
@@ -189,6 +206,7 @@ void sim_image_data(const char* csv_file_path) {
   int r, g, b;
   int hcnt = 0, vcnt = 0;
   top->per_frame_vsync = 1;
+  #ifdef INPUT_RGB
   while (fscanf(file, "%d,%d,%d", &r, &g, &b) == 3) {
     top->per_img_red = r;
     top->per_img_green = g;
@@ -213,6 +231,27 @@ void sim_image_data(const char* csv_file_path) {
       }
     }
   }
+  #else //input raw
+  while (fscanf(file, "%d", &r) == 1) {
+    top->per_img_raw = r;
+    top->per_frame_href = 1;
+    step();
+    hcnt++;
+    if (hcnt == image_width) {
+      hcnt = 0;
+      vcnt++;
+      top->per_frame_href = 0;
+      step(5);
+      printf("End of line[%d]\n", vcnt);
+      if (vcnt == image_height) {
+        top->per_frame_vsync = 0;
+        printf("End of image\n");
+        step(100000);
+        break;
+      }
+    }
+  }
+  #endif
   fclose(file);
 }
 
