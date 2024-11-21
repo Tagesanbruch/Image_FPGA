@@ -15,6 +15,7 @@ object ISPRegOffset {
     val ISP_CCM_LO = 0x20
     val ISP_CCM_MI = 0x24
     val ISP_CCM_HI = 0x28
+    val ISP_AWB = 0x2C
     // val ISP_CSC = 0x24
     // val ISP_BLC = 0x28
     // val ISP_DPC = 0x2C
@@ -33,13 +34,17 @@ class ISP extends Module {
     val IMG_WIDTH = 1920
     val IMG_HEIGHT = 1080
 
-    val BLC = Module(new BLC(8, 3, IMG_WIDTH, IMG_HEIGHT))
+    val BLC = Module(new BLC(8, 2, IMG_WIDTH, IMG_HEIGHT))
 
-    val CFA = Module(new CFA(8, 5, IMG_WIDTH, IMG_HEIGHT))
+    val CFA_2 = Module(new CFA(8, 2, IMG_WIDTH, IMG_HEIGHT))
 
-    val CCM = Module(new CCM(8, 5))
+    val AWB = Module(new AWB(8, 2))
+    
+    val CCM = Module(new CCM(8, 2))
 
-    val CSC = Module(new CSC(8, 5))
+    val CSC = Module(new CSC(8, 2))
+
+
 
     val SobelDetector = Module(new SobelDetector(IMG_WIDTH, IMG_HEIGHT, 10))
 
@@ -53,12 +58,12 @@ class ISP extends Module {
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
-        0x00FDFEFE.U(32.W), //BLC_LO, 0, -3, -2, -2
+        0x00000000.U(32.W), //BLC_LO, 0, 3, 2, 2
         0x00000000.U(32.W), //BLC_HI, 2, 3
         0x00FDFD16.U(32.W), //CCM_LO, -3, -3, 22
         0x00FEFE14.U(32.W), //CCM_MI, -2, 20, -2
         0x0016FDFD.U(32.W), //CCM_HI, 22, -3, -3
-        0x00000000.U(32.W), //
+        BigInt("80646480", 16).U(32.W), //AWB, 128, 100, 100, 128
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
@@ -97,7 +102,17 @@ class ISP extends Module {
     BLC.io.I_alpha := ConfigReg(ISPRegOffset.ISP_BLC_HI)(7, 0)
     BLC.io.I_beta := ConfigReg(ISPRegOffset.ISP_BLC_HI)(15, 8)
 
-    CFA.io.per_isp_bus <> io.per_isp_bus
+    AWB.io.per_isp_bus <> BLC.io.post_isp_bus
+
+    AWB.io.I_b_gain := ConfigReg(ISPRegOffset.ISP_AWB)(7, 0)
+    AWB.io.I_gb_gain := ConfigReg(ISPRegOffset.ISP_AWB)(15, 8)
+    AWB.io.I_gr_gain := ConfigReg(ISPRegOffset.ISP_AWB)(23, 16)
+    AWB.io.I_r_gain := ConfigReg(ISPRegOffset.ISP_AWB)(31, 24)
+
+    CFA_2.io.per_isp_bus <> AWB.io.post_isp_bus
+
+    val CFA = Module(new CFA_Verilog_TOP(8, 5, IMG_WIDTH, IMG_HEIGHT))
+    CFA.io.per_isp_bus <> AWB.io.post_isp_bus
 
     CCM.io.per_isp_bus <> CFA.io.post_isp_bus
 
@@ -119,6 +134,6 @@ class ISP extends Module {
 
     // io.post_isp_bus <> SobelDetector.io.post_isp_bus
     // io.post_isp_bus <> CSC.io.post_isp_bus
-    io.post_isp_bus <> CFA.io.post_isp_bus
-
+    // io.post_isp_bus <> CFA.io.post_isp_bus
+    io.post_isp_bus <> CCM.io.post_isp_bus
 }

@@ -17,7 +17,7 @@ build/
 .src/*
 playground_bk/
 src/bak/*
-
+verilator/isp/vsrc_backup
 # mill
 out/*
 .bsp/

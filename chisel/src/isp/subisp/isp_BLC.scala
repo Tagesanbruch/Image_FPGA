@@ -34,21 +34,10 @@ class BLC(
     per_frame_href := io.per_isp_bus.frame_href
     per_img_raw := io.per_isp_bus.img_raw.asSInt
 
-    val per_frame_href_dly = RegNext(per_frame_href, false.B)
-    val img_href_neg = dontTouch(WireInit(0.U))
-    img_href_neg := !per_frame_href && per_frame_href_dly
-
-    hcnt := Mux(per_frame_href, hcnt + 1.U, 0.U)
-    vcnt := Mux(
-      per_frame_vsync === 0.U,
-      0.U,
-      Mux(img_href_neg === 1.U, vcnt + 1.U, vcnt)
-    )
-
     val per_img_raw_dly = RegNext(io.per_isp_bus.img_raw, 0.U)
 
-    val oddline = Wire(Bool())
-    val oddcol = Wire(Bool())
+    val oddline = dontTouch(Wire(Bool()))
+    val oddcol  = dontTouch(Wire(Bool()))
     oddline := vcnt(0)
     oddcol := hcnt(0)
 
@@ -75,6 +64,17 @@ class BLC(
 
     in_href.io.din := per_frame_href
     in_vsync.io.din := per_frame_vsync
+    
+    val per_frame_href_dly = RegNext(in_href.io.dout, false.B)
+    val img_href_neg = dontTouch(WireInit(0.U))
+    img_href_neg := !per_frame_href && (per_frame_href_dly === 1.U)
+
+    hcnt := Mux(in_href.io.dout === 1.U, hcnt + 1.U, 0.U)
+    vcnt := Mux(
+      in_vsync.io.dout === 0.U,
+      0.U,
+      Mux(img_href_neg === 1.U, vcnt + 1.U, vcnt)
+    )
 
     io.post_isp_bus.frame_href := in_href.io.dout
     io.post_isp_bus.frame_vsync := in_vsync.io.dout

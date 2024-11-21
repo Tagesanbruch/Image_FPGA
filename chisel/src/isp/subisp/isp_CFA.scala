@@ -23,11 +23,19 @@ class CFA(BITS: Int = 8, DELAY_NUM: Int = 5, IMG_HDISP: Int, IMG_VDISP: Int) ext
     per_frame_href := io.per_isp_bus.frame_href
     per_img_raw := io.per_isp_bus.img_raw
 
-    val per_frame_href_dly = RegNext(per_frame_href, false.B)
-    val img_href_neg = dontTouch(WireInit(0.U))
-    img_href_neg := !per_frame_href && per_frame_href_dly
+    
+    val in_href = Module(new ShiftReg(DELAY_NUM, ShiftRegDirection.Left))
+    val in_vsync = Module(new ShiftReg(DELAY_NUM, ShiftRegDirection.Left))
 
-    hcnt := Mux(per_frame_href, hcnt + 1.U, 0.U)
+    in_href.io.din := per_frame_href
+    in_vsync.io.din := per_frame_vsync
+
+    
+    val per_frame_href_dly = RegNext(in_href.io.dout, false.B)
+    val img_href_neg = dontTouch(WireInit(0.U))
+    img_href_neg := !in_href.io.dout && (per_frame_href_dly === 1.U)
+
+    hcnt := Mux(in_href.io.dout === 1.U, hcnt + 1.U, 0.U)
     vcnt := Mux(
       per_frame_vsync === 0.U,
       0.U,
@@ -72,11 +80,6 @@ class CFA(BITS: Int = 8, DELAY_NUM: Int = 5, IMG_HDISP: Int, IMG_VDISP: Int) ext
         (!oddline && oddcol) -> ((matrix.io.matrix(0)(1) + matrix.io.matrix(2)(1) + matrix.io.matrix(1)(0) + matrix.io.matrix(1)(2)) >> 2)
     ))
 
-    val in_href = Module(new ShiftReg(DELAY_NUM, ShiftRegDirection.Left))
-    val in_vsync = Module(new ShiftReg(DELAY_NUM, ShiftRegDirection.Left))
-
-    in_href.io.din := per_frame_href
-    in_vsync.io.din := per_frame_vsync
 
     io.post_isp_bus.frame_mode := ISPMode.RGB888.id.U
     io.post_isp_bus.frame_vsync := in_vsync.io.dout

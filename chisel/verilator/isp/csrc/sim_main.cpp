@@ -222,7 +222,7 @@ void sim_image_data(const char* csv_file_path) {
   int r, g, b;
   int hcnt = 0, vcnt = 0;
   top->io_per_isp_bus_frame_vsync = 1;
-
+  top->io_per_isp_bus_frame_mode = 0;
   #ifdef INPUT_RGB
   while (fscanf(file, "%d,%d,%d", &r, &g, &b) == 3) {
     top->io_per_isp_bus_img_red = r;
