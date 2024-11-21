@@ -20,6 +20,7 @@ build/
 playground_bk/
 src/bak/*
 verilator/isp/vsrc_backup
+verilator/isp/utils/output
 
 # mill
 out/*

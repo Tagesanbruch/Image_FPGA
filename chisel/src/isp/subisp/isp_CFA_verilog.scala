@@ -121,6 +121,7 @@ class CFA_verilog extends BlackBox with HasBlackBoxInline{
     })
     setInline("CFA_verilog.v",
     """
+        |// by anlogic
         |module CFA_verilog#(
         |    parameter   [13:0]  H_SIZE = 1920,    //640*480
         |    parameter   [13:0]  V_SIZE = 1080

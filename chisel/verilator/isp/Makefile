@@ -14,7 +14,7 @@ export VERILATOR_ROOT
 VERILATOR = $(VERILATOR_ROOT)/bin/verilator
 endif
 VERILATOR_CFLAGS += -MMD --build -cc --trace-fst \
-				-O3 --x-assign fast --x-initial fast --noassert -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC
+				-O3 --x-assign fast --x-initial fast --noassert -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-TIMESCALEMOD
 TOPNAME = ISP
 WORK_DIR  = $(shell pwd)
 INC_PATH := $(WORK_DIR)/inc $(INC_PATH)
@@ -66,6 +66,7 @@ CSV_PATH = $(abspath ./tempFile/originalImage_csv)
 OUTPUT_PATH = $(abspath ./tempFile/outputImage_csv)
 OUTPUTIMAGE_PATH = $(abspath ./outputImage)
 TEST_TARGET ?= Sun1920
+# TEST_TARGET ?= Scart640
 
 CSVFLAGS = --csv=$(CSV_PATH)/$(TEST_TARGET).csv
 PARAMFLAGS = --param=$(CSV_PATH)/$(TEST_TARGET).txt

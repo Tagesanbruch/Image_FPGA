@@ -19,21 +19,50 @@ class CSC(BITS: Int = 8, DELAY_NUM: Int = 5) extends Module {
     val per_frame_href = io.per_isp_bus.frame_href
     val per_frame_vsync = io.per_isp_bus.frame_vsync
 
-    val img_red_r0 = RegNext(per_img_red * 77.U, 0.U)
-    val img_red_r1 = RegNext(per_img_red * 43.U, 0.U)
-    val img_red_r2 = RegNext(per_img_red * 128.U, 0.U)
-    val img_green_r0 = RegNext(per_img_green * 150.U, 0.U)
-    val img_green_r1 = RegNext(per_img_green * 85.U, 0.U)
-    val img_green_r2 = RegNext(per_img_green * 107.U, 0.U)
-    val img_blue_r0 = RegNext(per_img_blue * 29.U, 0.U)
-    val img_blue_r1 = RegNext(per_img_blue * 128.U, 0.U)
-    val img_blue_r2 = RegNext(per_img_blue * 21.U, 0.U)
+    // val img_red_r0 = RegNext(per_img_red * 77.U, 0.U)
+    // val img_red_r1 = RegNext(per_img_red * 43.U, 0.U)
+    // val img_red_r2 = RegNext(per_img_red * 128.U, 0.U)
+    // val img_green_r0 = RegNext(per_img_green * 150.U, 0.U)
+    // val img_green_r1 = RegNext(per_img_green * 85.U, 0.U)
+    // val img_green_r2 = RegNext(per_img_green * 107.U, 0.U)
+    // val img_blue_r0 = RegNext(per_img_blue * 29.U, 0.U)
+    // val img_blue_r1 = RegNext(per_img_blue * 128.U, 0.U)
+    // val img_blue_r2 = RegNext(per_img_blue * 21.U, 0.U)
 
-    val img_Y_r0 = RegNext(img_red_r0 + img_green_r0 + img_blue_r0, 0.U)
-    val img_Cb_r0 =
-        RegNext(img_blue_r1 - img_red_r1 - img_green_r1 + 32768.U, 0.U)
-    val img_Cr_r0 =
-        RegNext(img_red_r2 + img_green_r2 + img_blue_r2 + 32768.U, 0.U)
+    val img_red_r0 = RegInit(0.U(16.W))
+    val img_red_r1 = RegInit(0.U(16.W))
+    val img_red_r2 = RegInit(0.U(16.W))
+    val img_green_r0 = RegInit(0.U(16.W))
+    val img_green_r1 = RegInit(0.U(16.W))
+    val img_green_r2 = RegInit(0.U(16.W))
+    val img_blue_r0 = RegInit(0.U(16.W))
+    val img_blue_r1 = RegInit(0.U(16.W))
+    val img_blue_r2 = RegInit(0.U(16.W))
+
+    img_red_r0 := per_img_red * 77.U
+    img_red_r1 := per_img_red * 43.U
+    img_red_r2 := per_img_red * 128.U
+    img_green_r0 := per_img_green * 150.U
+    img_green_r1 := per_img_green * 85.U
+    img_green_r2 := per_img_green * 107.U
+    img_blue_r0 := per_img_blue * 29.U
+    img_blue_r1 := per_img_blue * 128.U
+    img_blue_r2 := per_img_blue * 21.U
+
+
+    // val img_Y_r0 = RegNext(img_red_r0 + img_green_r0 + img_blue_r0, 0.U)
+    // val img_Cb_r0 =
+    //     RegNext(img_blue_r1 - img_red_r1 - img_green_r1 + 32768.U, 0.U)
+    // val img_Cr_r0 =
+    //     RegNext(img_red_r2 + img_green_r2 + img_blue_r2 + 32768.U, 0.U)
+
+    val img_Y_r0 = RegInit(0.U(16.W))
+    val img_Cb_r0 = RegInit(0.U(16.W))
+    val img_Cr_r0 = RegInit(0.U(16.W))
+
+    img_Y_r0 := RegNext(img_red_r0 + img_green_r0 + img_blue_r0)
+    img_Cb_r0 := RegNext(img_blue_r1 - img_red_r1 - img_green_r1 + 32768.U)
+    img_Cr_r0 := RegNext(img_red_r2 + img_green_r2 + img_blue_r2 + 32768.U)
 
     val img_Y_r1 = RegNext(img_Y_r0(15, 8), 0.U)
     val img_Cb_r1 = RegNext(img_Cb_r0(15, 8), 0.U)

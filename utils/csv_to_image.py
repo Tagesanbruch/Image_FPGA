@@ -68,29 +68,27 @@ def save_rgb_image(rgb_data, width, height, output_file):
     image = Image.fromarray(rgb_array, mode='RGB')
     image.save(output_file)
 
-def save_ycbcr_image(ycbcr_data, width, height, output_file):
-    ycbcr_array = np.array(ycbcr_data, dtype=np.uint8).reshape((height, width, 3))
-    image = Image.fromarray(ycbcr_array, mode='YCbCr')
-    rgb_image = image.convert('RGB')
-    rgb_image.save(output_file)
-
-# def yuv_to_rgb(y, u, v):
-#     c = y - 16
-#     d = u - 128
-#     e = v - 128
-#     r = (298 * c + 409 * e + 128) >> 8
-#     g = (298 * c - 100 * d - 208 * e + 128) >> 8
-#     b = (298 * c + 516 * d + 128) >> 8
-#     return np.clip(r, 0, 255), np.clip(g, 0, 255), np.clip(b, 0, 255)
-
 # def save_ycbcr_image(ycbcr_data, width, height, output_file):
-#     rgb_data = []
-#     for y, u, v in ycbcr_data:
-#         r, g, b = yuv_to_rgb(y, u, v)
-#         rgb_data.append((r, g, b))
-#     rgb_array = np.array(rgb_data, dtype=np.uint8).reshape((height, width, 3))
-#     image = Image.fromarray(rgb_array, mode='RGB')
-#     image.save(output_file)
+#     ycbcr_array = np.array(ycbcr_data, dtype=np.uint8).reshape((height, width, 3))
+#     image = Image.fromarray(ycbcr_array, mode='YCbCr')
+#     rgb_image = image.convert('RGB')
+#     rgb_image.save(output_file)
+
+def yuv_to_rgb(y, u, v):
+    # ycbcr444_to_rgb888
+    r = y + 1.402 * (v - 128)
+    g = y - 0.344136 * (u - 128) - 0.714136 * (v - 128)
+    b = y + 1.772 * (u - 128)
+    return np.clip(r, 0, 255), np.clip(g, 0, 255), np.clip(b, 0, 255)
+
+def save_ycbcr_image(ycbcr_data, width, height, output_file):
+    rgb_data = []
+    for y, u, v in ycbcr_data:
+        r, g, b = yuv_to_rgb(y, u, v)
+        rgb_data.append((r, g, b))
+    rgb_array = np.array(rgb_data, dtype=np.uint8).reshape((height, width, 3))
+    image = Image.fromarray(rgb_array, mode='RGB')
+    image.save(output_file)
 
 def save_raw_bggr_image(raw_bggr_data, width, height, output_file):
     hcnt = 0

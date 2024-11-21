@@ -16,6 +16,9 @@ object ISPRegOffset {
     val ISP_CCM_MI = 0x24
     val ISP_CCM_HI = 0x28
     val ISP_AWB = 0x2C
+    val ISP_GAC = 0x30
+    val ISP_HSC = 0x34
+    val ISP_BCC = 0x38
     // val ISP_CSC = 0x24
     // val ISP_BLC = 0x28
     // val ISP_DPC = 0x2C
@@ -44,7 +47,13 @@ class ISP extends Module {
 
     val CSC = Module(new CSC(8, 2))
 
+    val GAC = Module(new GAC(8, 2))
 
+    val HSC = Module(new HSC(8, 2))
+
+    val BCC = Module(new BCC(8, 2))
+
+    val YCbCr2RGB = Module(new YCbCr2RGB(8, 2))
 
     val SobelDetector = Module(new SobelDetector(IMG_WIDTH, IMG_HEIGHT, 10))
 
@@ -61,12 +70,12 @@ class ISP extends Module {
         0x00000000.U(32.W), //BLC_LO, 0, 3, 2, 2
         0x00000000.U(32.W), //BLC_HI, 2, 3
         0x00FDFD16.U(32.W), //CCM_LO, -3, -3, 22
-        0x00FEFE14.U(32.W), //CCM_MI, -2, 20, -2
+        0x00FE14FE.U(32.W), //CCM_MI, -2, 20, -2
         0x0016FDFD.U(32.W), //CCM_HI, 22, -3, -3
         BigInt("80646480", 16).U(32.W), //AWB, 128, 100, 100, 128
-        0x00000000.U(32.W), //
-        0x00000000.U(32.W), //
-        0x00000000.U(32.W), //
+        0x00000002.U(32.W), //GAC, 0
+        0x00000000.U(32.W), //HSC
+        0x00000000.U(32.W), //BCC
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
         0x00000000.U(32.W), //
@@ -126,14 +135,37 @@ class ISP extends Module {
     CCM.io.I_m_bg := ConfigReg(ISPRegOffset.ISP_CCM_HI)(15, 8).asSInt
     CCM.io.I_m_bb := ConfigReg(ISPRegOffset.ISP_CCM_HI)(23, 16).asSInt
 
-    CSC.io.per_isp_bus <> CCM.io.post_isp_bus
+    GAC.io.per_isp_bus <> CCM.io.post_isp_bus
 
-    SobelDetector.io.per_isp_bus <> CSC.io.post_isp_bus
+    GAC.io.I_GAC_mode := ConfigReg(ISPRegOffset.ISP_GAC)(7, 0)
+
+    CSC.io.per_isp_bus <> GAC.io.post_isp_bus
+
+    HSC.io.per_isp_bus <> CSC.io.post_isp_bus
+
+    HSC.io.I_Hue := ConfigReg(ISPRegOffset.ISP_HSC)(7, 0)
+    HSC.io.I_Saturation := ConfigReg(ISPRegOffset.ISP_HSC)(15, 8)
+
+    BCC.io.per_isp_bus <> HSC.io.post_isp_bus
+
+    BCC.io.I_Brightness_Offset := ConfigReg(ISPRegOffset.ISP_BCC)(7, 0).asSInt
+    BCC.io.I_Contrast_Gain := ConfigReg(ISPRegOffset.ISP_BCC)(15, 8)
+
+
+    SobelDetector.io.per_isp_bus <> BCC.io.post_isp_bus
 
     SobelDetector.io.thresh := ConfigReg(ISPRegOffset.ISP_SOBEL_THRESH)(7, 0)
+
+    // val CSC_V = Module(new CSC_V(8, 5))
+
+    // CSC_V.io.per_isp_bus <> GAC.io.post_isp_bus
+
+    YCbCr2RGB.io.per_isp_bus <> CSC.io.post_isp_bus
+
 
     // io.post_isp_bus <> SobelDetector.io.post_isp_bus
     // io.post_isp_bus <> CSC.io.post_isp_bus
     // io.post_isp_bus <> CFA.io.post_isp_bus
-    io.post_isp_bus <> CCM.io.post_isp_bus
+    // io.post_isp_bus <> GAC.io.post_isp_bus
+    io.post_isp_bus <> YCbCr2RGB.io.post_isp_bus
 }
